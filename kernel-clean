@@ -1,0 +1,14 @@
+#!/bin/bash
+
+CURRENT="linux-image-`uname -r`"
+echo "Current running kernel: $CURRENT"
+
+NEWEST=`dpkg -l | grep linux-image- | egrep '^ii' | awk '{print $2}' | grep "[0-9]\.[0-9]" | sort | tail -n1`
+echo "Newest installed kernel: $NEWEST"
+
+TOREMOVE=`dpkg -l | grep linux-image- | egrep '^ii' | awk '{print $2}' | grep "[0-9]\.[0-9]" | sort | head -n-1 | grep -v $CURRENT`
+
+echo "To remove:"
+echo "$TOREMOVE"
+
+apt-get remove $TOREMOVE
