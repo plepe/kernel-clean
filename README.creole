@@ -1,0 +1,9 @@
+Script to remove all installed kernels but the newest one and the currently running.
+
+{{{
+cd /usr/local
+git clone https://github.com/plepe/kernel-clean.git
+ln -s /usr/local/kernel-clean/kernel-clean /usr/local/bin/
+}}}
+
+Run {{{kernel-clean}}} to remove old kernels. 
