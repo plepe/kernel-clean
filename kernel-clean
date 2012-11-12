@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 CURRENT="linux-image-`uname -r`"
 echo "Current running kernel: $CURRENT"
@@ -6,9 +6,17 @@ echo "Current running kernel: $CURRENT"
 NEWEST=`dpkg -l | grep linux-image- | egrep '^ii' | awk '{print $2}' | grep "[0-9]\.[0-9]" | sort | tail -n1`
 echo "Newest installed kernel: $NEWEST"
 
+GENERIC=`dpkg -l linux-image-generic | egrep '^ii' | awk '{print $3}' `
+echo "Newest installed generic kernel version: $GENERIC"
+
 TOREMOVE=`dpkg -l | grep linux-image- | egrep '^ii' | awk '{print $2}' | grep "[0-9]\.[0-9]" | sort | head -n-1 | grep -v $CURRENT`
 
 echo "To remove:"
 echo "$TOREMOVE"
 
-apt-get remove $TOREMOVE
+if [ "$1" = "-y" ]
+then
+	ARGS="$ARGS -y"
+fi
+
+apt-get $ARGS purge $TOREMOVE
