@@ -14,4 +14,9 @@ TOREMOVE=`dpkg -l | grep linux-image- | egrep '^ii' | awk '{print $2}' | grep "[
 echo "To remove:"
 echo "$TOREMOVE"
 
-apt-get purge $TOREMOVE
+if [ "$1" = "-y" ]
+then
+	ARGS="$ARGS -y"
+fi
+
+apt-get $ARGS purge $TOREMOVE
