@@ -14,7 +14,9 @@ TOREMOVE=`dpkg -l | grep linux-image- | egrep '^ii' | awk '{print $2}' | grep "[
 HEADERS=`dpkg -l | grep linux-image- | egrep '^ii' | awk '{print $2}' | grep "[0-9]\.[0-9]" | sort -V | head -n-1 | grep -v $CURRENT | sed 's/linux-image-\(.*\)-\(.*\)/linux-headers-\1/'`
 
 echo "To remove:"
-echo "$TOREMOVE $HEADERS"
+for i in $TOREMOVE $HEADERS ; do
+  echo "  $i"
+done
 
 if [ "$1" = "-y" ]
 then
