@@ -14,6 +14,15 @@ TOREMOVE=`echo "$IMAGES" | head -n-1 | grep -v $CURRENT`
 
 HEADERS=`echo "$TOREMOVE" | sed 's/linux-image-\(.*\)-\(.*\)/linux-headers-\1/'`
 
+# Check which header files are installed
+N=""
+for i in $HEADERS ; do
+  if [ "`dpkg -l $i | egrep \"^ii  $i\"`" != "" ] ; then
+    N="$N $i"
+  fi
+done
+HEADERS=$N
+
 echo "To remove:"
 for i in $TOREMOVE $HEADERS ; do
   echo "  $i"
