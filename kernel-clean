@@ -13,7 +13,9 @@ echo "Newest installed kernel: $NEWEST"
 
 # Print version of newest installed generic kernel
 GENERIC=`dpkg -l linux-image-generic | egrep '^ii' | awk '{print $3}' `
-echo "Newest installed generic kernel version: $GENERIC"
+if [ -n "$GENERIC" ]; then
+	echo "Newest installed generic kernel version: $GENERIC"
+fi
 
 # Remove all kernels but newest and current
 TOREMOVE=`echo "$IMAGES" | head -n-1 | grep -v $CURRENT`
