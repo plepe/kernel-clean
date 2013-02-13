@@ -13,7 +13,9 @@ echo "Newest installed kernel: $NEWEST"
 
 # Print version of newest installed generic kernel
 GENERIC=`dpkg -l linux-image-generic | egrep '^ii' | awk '{print $3}' `
-echo "Newest installed generic kernel version: $GENERIC"
+if [ -n "$GENERIC" ]; then
+	echo "Newest installed generic kernel version: $GENERIC"
+fi
 
 # Remove all kernels but newest and current
 TOREMOVE=`echo "$IMAGES" | head -n-1 | grep -v $CURRENT`
@@ -24,7 +26,7 @@ HEADERS=`echo "$TOREMOVE" | sed 's/linux-image-\(.*\)-\(.*\)/linux-headers-\1/'`
 # Check which header files are installed
 N=""
 for i in $HEADERS ; do
-  if [ "`dpkg -l $i | egrep \"^ii  $i\"`" != "" ] ; then
+  if [ "`dpkg -l $i 2>/dev/null | egrep \"^ii  $i\"`" != "" ] ; then
     N="$N $i"
   fi
 done
