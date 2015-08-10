@@ -19,3 +19,8 @@ Automation
 One way to automate the clean up is by executing `kernel-clean -y`
 automatically by cron every once in a while, for example once per week:
 `ln -s /usr/local/kernel-clean/kernel-clean.hook /etc/cron.weekly/kernel-clean`
+
+Contributors
+============
+* Stephan Bösch-Plepelits @plepe
+* Stefan Tauner @stefanct
