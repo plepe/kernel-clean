@@ -4,37 +4,63 @@
 CURRENT="linux-image-`uname -r`"
 echo "Current running kernel: $CURRENT"
 
-# Get list of installed kernels, sort by version ascending
-IMAGES=`dpkg -l "linux-image-*" | egrep '^ii' | awk '{print $2}' | grep "[0-9]\.[0-9]" | sort -V`
+# Get list of all not cleanly uninstalled kernels, sort by version ascending
+ALLIMAGES=`dpkg -l "linux-image-*" | grep -E '^..[[:space:]]+linux-image-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}' | sort -V`
+# Likewise for headers (but without sorting)
+ALLHEADERS=`dpkg -l "linux-headers-*" | grep -E '^..[[:space:]]+linux-headers-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}'`
+# And for extra images
+ALLEXTRA=`dpkg -l "linux-image-extra-*" | grep -E '^..[[:space:]]+linux-image-extra-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}'`
 
 # Get newest installed kernel from list of installed kernels
-NEWEST=`echo "$IMAGES" | tail -n1`
+NEWEST=`echo "$ALLIMAGES" | tail -n1`
 echo "Newest installed kernel: $NEWEST"
 
 # Print version of newest installed generic kernel
-GENERIC=`dpkg -l linux-image-generic | egrep '^ii' | awk '{print $3}' `
+GENERIC=`dpkg -l linux-image-generic | grep -E '^ii' | awk '{print $3}' `
 if [ -n "$GENERIC" ]; then
 	echo "Newest installed generic kernel version: $GENERIC"
 fi
 
 # Remove all kernels but newest and current
-TOREMOVE=`echo "$IMAGES" | head -n-1 | grep -v $CURRENT`
+TOREMOVE=`echo "$ALLIMAGES" | head -n-1 | grep -v $CURRENT`
 
 # Also remove linux headers
-HEADERS=`echo "$TOREMOVE" | sed 's/linux-image-\(.*\)-\(.*\)/linux-headers-\1/'`
-
-# Check which header files are installed
+TOREMOVEHEADERS=`echo "$TOREMOVE" | sed 's/linux-image-\(.*\)-\(.*\)/linux-headers-\1-\2/'`
 N=""
-for i in $HEADERS ; do
-  if [ "`dpkg -l $i 2>/dev/null | egrep \"^ii  $i\"`" != "" ] ; then
+for i in $ALLHEADERS ; do
+  # If header belongs to a to-be-removed kernel then remove it as well
+  if [ "`echo $TOREMOVEHEADERS | grep "$i"`" != "" ] ; then
+    N="$N $i"
+  fi
+
+  I_KERNEL=`echo "$i" | sed 's/linux-headers-\(.*\)-\(.*\)/linux-image-\1-\2/'`
+  if [ "`echo "$ALLIMAGES" | grep "$I_KERNEL"`" = "" ] ; then
+	echo "unnedig: $i ohne $I_KERNEL"
     N="$N $i"
   fi
 done
-HEADERS=$N
+TOREMOVEHEADERS=$N
+
+# Same procedure for extra images
+TOREMOVEEXTRAS=`echo "$TOREMOVE" | sed 's/linux-image-\(.*\)-\(.*\)/linux-image-extra-\1-\2/'`
+N=""
+for i in $ALLEXTRA ; do
+  # If extra images belongs to a to-be-removed kernel then remove it as well
+  if [ "`echo $TOREMOVEEXTRAS | grep "$i"`" != "" ] ; then
+    N="$N $i"
+  fi
+
+  I_KERNEL=`echo "$i" | sed 's/linux-image-extra-\(.*\)-\(.*\)/linux-image-\1-\2/'`
+  if [ "`echo "$ALLIMAGES" | grep "$I_KERNEL"`" = "" ] ; then
+	echo "unnedig: $i ohne $I_KERNEL"
+    N="$N $i"
+  fi
+done
+TOREMOVEEXTRAS=$N
 
 # List all kernels and headers which are to be removed
 echo "To remove:"
-for i in $TOREMOVE $HEADERS ; do
+for i in $TOREMOVE $TOREMOVEEXTRAS $TOREMOVEHEADERS ; do
   echo "  $i"
 done
 
@@ -45,4 +71,4 @@ then
 fi
 
 # Remove kernels
-apt-get $ARGS purge $TOREMOVE $HEADERS
+apt-get $ARGS purge $TOREMOVE $TOREMOVEEXTRAS $TOREMOVEHEADERS
