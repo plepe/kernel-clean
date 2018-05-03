@@ -15,8 +15,8 @@ ALLEXTRA=`dpkg -l "linux-image-extra-*" | grep -E '^..[[:space:]]+linux-image-ex
 NEWEST=`echo "$ALLIMAGES" | tail -n1`
 echo "Newest installed kernel: $NEWEST"
 
-# Print version of newest installed generic kernel
-GENERIC=`dpkg -l linux-image-generic | grep -E '^ii' | awk '{print $3}' `
+# Print version of newest installed generic kernel (including Ubuntu's HWE versions)
+GENERIC=`dpkg -l 'linux-image-generic*' | grep -E '^ii' | awk '{print $3}' | sort -V | tail -1`
 if [ -n "$GENERIC" ]; then
 	echo "Newest installed generic kernel version: $GENERIC"
 fi
