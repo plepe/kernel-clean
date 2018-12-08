@@ -33,9 +33,9 @@ for i in $ALLHEADERS ; do
     N="$N $i"
   fi
 
+  # If package belongs to a kernel that is not even installed, it's useless as well
   I_KERNEL=`echo "$i" | sed 's/linux-headers-\(.*\)-\(.*\)/linux-image-\1-\2/'`
   if [ "`echo "$ALLIMAGES" | grep "$I_KERNEL"`" = "" ] ; then
-	echo "unnedig: $i ohne $I_KERNEL"
     N="$N $i"
   fi
 done
@@ -50,9 +50,9 @@ for i in $ALLEXTRA ; do
     N="$N $i"
   fi
 
+  # If package belongs to a kernel that is not even installed, it's useless as well
   I_KERNEL=`echo "$i" | sed 's/linux-image-extra-\(.*\)-\(.*\)/linux-image-\1-\2/'`
   if [ "`echo "$ALLIMAGES" | grep "$I_KERNEL"`" = "" ] ; then
-	echo "unnedig: $i ohne $I_KERNEL"
     N="$N $i"
   fi
 done
