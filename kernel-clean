@@ -10,6 +10,8 @@ ALLIMAGES=`dpkg -l "linux-image-*" | grep -E '^..[[:space:]]+linux-image-[\.[:di
 ALLHEADERS=`dpkg -l "linux-headers-*" | grep -E '^..[[:space:]]+linux-headers-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}'`
 # And for extra images
 ALLEXTRA=`dpkg -l "linux-image-extra-*" | grep -E '^..[[:space:]]+linux-image-extra-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}'`
+# And for modules packages (introduced in Ubuntu 18.04), including linux-modules-<version> and linux-modules-extra-<version>
+ALLMODULES=`dpkg -l "linux-modules-*" | grep -E '^..[[:space:]]+linux-modules(-extra)?-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}'`
 
 # Get newest installed kernel from list of installed kernels
 NEWEST=`echo "$ALLIMAGES" | tail -n1`
@@ -58,9 +60,27 @@ for i in $ALLEXTRA ; do
 done
 TOREMOVEEXTRAS=$N
 
+# And modules (extra and normal)
+TOREMOVEMODULES=`echo "$TOREMOVE" | sed 's/linux-image-\(.*\)-\(.*\)/linux-modules-\1-\2/' ; \
+                 echo "$TOREMOVE" | sed 's/linux-image-\(.*\)-\(.*\)/linux-modules-extra-\1-\2/'`
+N=""
+for i in $ALLMODULES ; do
+  # If package belongs to a to-be-removed kernel then remove it as well
+  if [ "`echo $TOREMOVEMODULES | grep "$i"`" != "" ] ; then
+    N="$N $i"
+  fi
+
+  # If package belongs to a kernel that is not even installed, it's useless as well
+  I_KERNEL=`echo "$i" | sed 's/linux-modules\(-extra\|\)-\(.*\)-\(.*\)/linux-image-\2-\3/'`
+  if [ "`echo "$ALLIMAGES" | grep "$I_KERNEL"`" = "" ] ; then
+    N="$N $i"
+  fi
+done
+TOREMOVEMODULES=$N
+
 # List all kernels and headers which are to be removed
 echo "To remove:"
-for i in $TOREMOVE $TOREMOVEEXTRAS $TOREMOVEHEADERS ; do
+for i in $TOREMOVE $TOREMOVEHEADERS $TOREMOVEEXTRAS $TOREMOVEMODULES ; do
   echo "  $i"
 done
 
@@ -71,4 +91,4 @@ then
 fi
 
 # Remove kernels
-apt-get $ARGS purge $TOREMOVE $TOREMOVEEXTRAS $TOREMOVEHEADERS
+apt-get $ARGS purge $TOREMOVE $TOREMOVEHEADERS $TOREMOVEEXTRAS $TOREMOVEMODULES
