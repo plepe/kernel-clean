@@ -1,11 +1,11 @@
 #!/bin/sh
 
 # Check for current installed kernel
-CURRENT="linux-image-`uname -r`"
+CURRENT=$(dpkg-query -f '${db:Status-Abbrev}\t${binary:Package}\n' -W "linux-image-*" | grep -o -P "(?<=^ii \t).*"$(uname -r) | grep -v "extra")
 echo "Current running kernel: $CURRENT"
 
 # Get list of all not cleanly uninstalled kernels, sort by version ascending
-ALLIMAGES=`dpkg -l "linux-image-*" 2>/dev/null | grep -E '^..[[:space:]]+linux-image-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}' | sort -V`
+ALLIMAGES=`dpkg -l "linux-image-*" 2>/dev/null | grep -E '^..[[:space:]]+linux-image(-.*)*-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}' | grep -v "extra" | sort -V`
 # Likewise for headers (but without sorting)
 ALLHEADERS=`dpkg -l "linux-headers-*" 2>/dev/null | grep -E '^..[[:space:]]+linux-headers-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}'`
 # And for extra images
@@ -36,8 +36,8 @@ for i in $ALLHEADERS ; do
   fi
 
   # If package belongs to a kernel that is not even installed, it's useless as well
-  I_KERNEL=`echo "$i" | sed 's/linux-headers-\(.*\)-\(.*\)/linux-image-\1-\2/'`
-  if [ "`echo "$ALLIMAGES" | grep "$I_KERNEL"`" = "" ] ; then
+  I_KERNEL=`echo "$i" | sed -E 's/linux-headers-([0-9\.]+)-(([0-9]+[^-]*)(.*))/linux-image(-[^-]+)?-\1-\3/'`
+  if [ "`echo "$ALLIMAGES" | grep -E "$I_KERNEL"`" = "" ] ; then
     N="$N $i"
   fi
 done
@@ -53,8 +53,8 @@ for i in $ALLEXTRA ; do
   fi
 
   # If package belongs to a kernel that is not even installed, it's useless as well
-  I_KERNEL=`echo "$i" | sed 's/linux-image-extra-\(.*\)-\(.*\)/linux-image-\1-\2/'`
-  if [ "`echo "$ALLIMAGES" | grep "$I_KERNEL"`" = "" ] ; then
+  I_KERNEL=`echo "$i" | sed 's/linux-image-extra-\(.*\)-\(.*\)/linux-image(-.*)*-\1-\2/'`
+  if [ "`echo "$ALLIMAGES" | grep -E "$I_KERNEL"`" = "" ] ; then
     N="$N $i"
   fi
 done
@@ -71,8 +71,8 @@ for i in $ALLMODULES ; do
   fi
 
   # If package belongs to a kernel that is not even installed, it's useless as well
-  I_KERNEL=`echo "$i" | sed 's/linux-modules\(-extra\|\)-\(.*\)-\(.*\)/linux-image-\2-\3/'`
-  if [ "`echo "$ALLIMAGES" | grep "$I_KERNEL"`" = "" ] ; then
+  I_KERNEL=`echo "$i" | sed 's/linux-modules\(-extra\)?-\(.*\)-\(.*\)/linux-image(-.*)*-\2-\3/'`
+  if [ "`echo "$ALLIMAGES" | grep -E "$I_KERNEL"`" = "" ] ; then
     N="$N $i"
   fi
 done
