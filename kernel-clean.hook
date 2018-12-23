@@ -1,2 +1,2 @@
 #!/bin/sh
-kernel-clean -y
+kernel-clean -y > /dev/null
