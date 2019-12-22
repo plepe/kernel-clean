@@ -81,7 +81,11 @@ for i in $ALLMODULES ; do
 done
 TOREMOVEMODULES=$N
 
-# List all kernels and headers which are to be removed
+if [ -z "$TOREMOVE" ] && [ -z "$TOREMOVEHEADERS" ] && [ -z "$TOREMOVEEXTRAS" ] && [ -z "$TOREMOVEMODULES" ]; then
+  echo "Nothing to remove, exiting."
+  exit 0
+fi
+
 echo "To remove:"
 for i in $TOREMOVE $TOREMOVEHEADERS $TOREMOVEEXTRAS $TOREMOVEMODULES ; do
   echo "  $i"
