@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# default apt-get args
+ARGS="--auto-remove"
+
 # Check for current installed kernel
 CURRENT=$(dpkg-query -f '${db:Status-Abbrev}\t${binary:Package}\n' -W "linux-image-*" | grep -o -P "(?<=^ii \t).*"$(uname -r) | grep -v "extra")
 echo "Current running kernel: $CURRENT"
