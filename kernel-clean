@@ -8,7 +8,7 @@ CURRENT=$(dpkg-query -f '${db:Status-Abbrev}\t${binary:Package}\n' -W "linux-ima
 echo "Current running kernel: $CURRENT"
 
 # Get list of all not cleanly uninstalled kernels, sort by version ascending
-ALLIMAGES=`dpkg -l "linux-image-*" 2>/dev/null | grep -E '^..[[:space:]]+linux-image(-.*)*-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}' | grep -v "extra" | sort -V`
+ALLIMAGES=`dpkg -l "linux-image-*" 2>/dev/null | grep -E '^..[[:space:]]+linux-image(-[^ ]+)*-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}' | grep -v "extra" | sort -V`
 # Likewise for headers (but without sorting)
 ALLHEADERS=`dpkg -l "linux-headers-*" 2>/dev/null | grep -E '^..[[:space:]]+linux-headers-[\.[:digit:]]+' | grep -Ev '^un' | awk '{print $2}'`
 # And for extra images
